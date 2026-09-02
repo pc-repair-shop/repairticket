@@ -4,5 +4,5 @@ COPY cupsd.conf /etc/cups/cupsd.conf
 COPY entrypoint.sh /usr/local/bin/cups-entrypoint.sh
 RUN chmod +x /usr/local/bin/cups-entrypoint.sh
 EXPOSE 631
-VOLUME ["/etc/cups", "/var/spool/cups"]
+VOLUME ["/var/spool/cups"]
 ENTRYPOINT ["/usr/local/bin/cups-entrypoint.sh"]

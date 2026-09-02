@@ -31,7 +31,6 @@ services:
       PRINTER_NAME: "PCRepairShop"
       PRINTER_URI: "ipp://192.168.1.189:631/ipp/print"
     volumes:
-      - cups-config:/etc/cups
       - cups-spool:/var/spool/cups
     healthcheck:
       test: ["CMD-SHELL", "lpstat -r >/dev/null 2>&1 && lpstat -p PCRepairShop >/dev/null 2>&1"]
@@ -47,5 +46,4 @@ networks:
     driver: bridge
 
 volumes:
-  cups-config:
   cups-spool:
