@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nieuwe reparatiebon</title>
+</head>
+<body>
+  <h1>Nieuwe reparatiebon</h1>
+
+  <form action="/submit.php" method="post">
+    <fieldset>
+      <legend>Bon</legend>
+      <p><label>Datum <input type="date" name="datum" value="" required></label></p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Klantgegevens</legend>
+      <p><label>Naam klant <input type="text" name="naam" required></label></p>
+      <p><label>Adres <input type="text" name="adres"></label></p>
+      <p><label>Postcode en woonplaats <input type="text" name="postcode_woonplaats"></label></p>
+      <p><label>Telefoon/GSM <input type="tel" name="telefoon"></label></p>
+      <p><label>E-mailadres <input type="email" name="email"></label></p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Beschrijving computer</legend>
+      <p><label>Merk <input type="text" name="merk"></label></p>
+      <p><label>Model <input type="text" name="model"></label></p>
+      <p><label>Serienummer <input type="text" name="serienummer"></label></p>
+      <p><label>Zegel <input type="text" name="zegel"></label></p>
+      <p><label>Prijs (€) <input type="number" name="prijs" min="0" step="0.01"></label></p>
+      <p><label>Totaal (€) <input type="number" name="totaal" min="0" step="0.01"></label></p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Meedoenregeling</legend>
+      <label><input type="radio" name="meedoenregeling" value="Ja" required> Ja</label>
+      <label><input type="radio" name="meedoenregeling" value="Nee" required> Nee</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Reparatie</legend>
+      <label><input type="radio" name="reparatie" value="Ja" required> Ja</label>
+      <label><input type="radio" name="reparatie" value="Nee" required> Nee</label>
+    </fieldset>
+
+    <p><label>Naam/paraaf medewerker <input type="text" name="medewerker" value="Daan"></label></p>
+    <button type="submit">Bon opslaan en printen</button>
+  </form>
+
+  <script>
+    document.querySelector('[name="datum"]').value = new Date().toISOString().slice(0, 10);
+  </script>
+</body>
+</html>

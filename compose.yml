@@ -1,0 +1,51 @@
+services:
+  repair-ticket:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: repair-ticket:latest
+    container_name: repair-ticket
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      CUPS_SERVER: "cups:631"
+      PRINTER_NAME: "PCRepairShop"
+      PRINT_COPIES: "1"
+    volumes:
+      - ./data:/data
+    depends_on:
+      cups:
+        condition: service_healthy
+    networks:
+      - repair-ticket-network
+
+  cups:
+    build:
+      context: ./cups
+      dockerfile: Dockerfile
+    image: repair-ticket-cups:latest
+    container_name: repair-ticket-cups
+    restart: unless-stopped
+    environment:
+      PRINTER_NAME: "PCRepairShop"
+      PRINTER_URI: "ipp://192.168.1.189:631/ipp/print"
+    volumes:
+      - cups-config:/etc/cups
+      - cups-spool:/var/spool/cups
+    healthcheck:
+      test: ["CMD-SHELL", "lpstat -r >/dev/null 2>&1 && lpstat -p PCRepairShop >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - repair-ticket-network
+
+networks:
+  repair-ticket-network:
+    driver: bridge
+
+volumes:
+  cups-config:
+  cups-spool:
