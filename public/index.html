@@ -7,6 +7,9 @@
 </head>
 <body>
 <h1>Nieuwe bon</h1>
+<form action="/history.php" method="get">
+  <button type="submit">Alle oude bonnen bekijken</button>
+</form>
 
 <form action="/submit.php" method="post">
   <fieldset>
@@ -63,7 +66,8 @@
     <label><input type="radio" name="reparatie" value="Nee" required> Nee</label>
   </fieldset>
 
-  <button type="submit">Bon opslaan en printen</button>
+  <button type="submit" name="action" value="save">Bon opslaan en bekijken</button>
+  <button type="submit" name="action" value="print">Bon opslaan en printen</button>
 </form>
 
 <script>

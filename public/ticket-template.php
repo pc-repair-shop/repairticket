@@ -84,15 +84,17 @@ function renderTicketHtml(array $v, string $logoBase64): string
     </tbody>
   </table>
   <?php endif; ?>
-  <div class="section-title">Omschrijving</div>
-  <div class="description"><?= $e($v['omschrijving']) ?></div>
+
   <table class="options-price"><tr>
     <td class="options">
       <p class="option-line"><span class="option-title">Meedoenregeling</span><span class="box"><?= $checked($v['meedoenregeling'], 'Ja') ?></span>Ja <span class="box"><?= $checked($v['meedoenregeling'], 'Nee') ?></span>Nee</p>
       <p class="option-line"><span class="option-title">Reparatie</span><span class="box"><?= $checked($v['reparatie'], 'Ja') ?></span>Ja <span class="box"><?= $checked($v['reparatie'], 'Nee') ?></span>Nee</p>
     </td>
-    <td style="width:5%"></td><td><table class="price"><tr><th>Prijs:</th><td><?= $v['prijs'] !== '' ? 'EUR ' . $e($v['prijs']) : '' ?></td></tr><tr><th>Totaal:</th><td><?= $v['totaal'] !== '' ? 'EUR ' . $e($v['totaal']) : '' ?></td></tr></table></td>
+    <td style="width:5%"></td><td><table class="price"><tr><th>Prijs:</th><td><?= $v['prijs'] !== '' ? 'EUR ' . $e($v['prijs']) : '' ?></td></tr>
+    <tr><th>Totaal:</th><td><?= $v['totaal'] !== '' ? 'EUR ' . $e($v['totaal']) : '' ?></td></tr></table></td>
   </tr></table>
+  <div class="section-title">Omschrijving</div>
+  <div class="description"><?= $e($v['omschrijving']) ?></div>
   <table class="signatures"><tr><td>Paraaf akkoord medewerker:</td><td class="gap"></td><td>Handtekening klant voor akkoord:</td></tr></table>
 </body></html>
     <?php

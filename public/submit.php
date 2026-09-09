@@ -17,6 +17,8 @@ const TICKET_DIR = DATA_DIR . '/tickets';
 const PRINT_QUEUE_DIR = DATA_DIR . '/print-queue';
 const COUNTER_FILE = DATA_DIR . '/counter.txt';
 
+require __DIR__ . '/print-queue.php';
+
 function field(string $name): string
 {
     return trim((string) ($_POST[$name] ?? ''));
@@ -97,32 +99,18 @@ function nextTicketNumber(): string
     return str_pad((string) $next, 4, '0', STR_PAD_LEFT);
 }
 
-/** @return array{success: bool, message: string} */
-function queuePdf(string $pdfFile): array
-{
-    if (!is_dir(PRINT_QUEUE_DIR)
-        && !mkdir(PRINT_QUEUE_DIR, 0775, true)
-        && !is_dir(PRINT_QUEUE_DIR)) {
-        return ['success' => false, 'message' => 'De printwachtrij kon niet worden aangemaakt.'];
-    }
-
-    $queueFile = PRINT_QUEUE_DIR . '/' . basename($pdfFile);
-    $temporaryFile = $queueFile . '.tmp-' . getmypid();
-
-    if (!copy($pdfFile, $temporaryFile) || !rename($temporaryFile, $queueFile)) {
-        @unlink($temporaryFile);
-        return ['success' => false, 'message' => 'De PDF is opgeslagen, maar kon niet in de printwachtrij worden geplaatst.'];
-    }
-
-    return ['success' => true, 'message' => 'De bon staat klaar in de printwachtrij.'];
-}
-
 if (!is_dir(TICKET_DIR) && !mkdir(TICKET_DIR, 0775, true) && !is_dir(TICKET_DIR)) {
     http_response_code(500);
     exit('De opslagmap voor bonnen kon niet worden aangemaakt.');
 }
 
 $datumRaw = field('datum');
+$action = field('action');
+if (!in_array($action, ['save', 'print'], true)) {
+    http_response_code(400);
+    exit('Ongeldige actie.');
+}
+
 $date = DateTimeImmutable::createFromFormat('Y-m-d', $datumRaw);
 if ($date === false || $date->format('Y-m-d') !== $datumRaw || field('naam') === '') {
     http_response_code(422);
@@ -175,34 +163,10 @@ if (file_put_contents($pdfFile, $dompdf->output(), LOCK_EX) === false) {
     exit('De PDF kon niet worden opgeslagen.');
 }
 
-$printResult = queuePdf($pdfFile);
-$statusClass = $printResult['success'] ? 'success' : 'warning';
-$statusTitle = $printResult['success'] ? 'Bon opgeslagen en naar de printer gestuurd' : 'Bon opgeslagen, printopdracht niet aangemaakt';
-?>
-<!doctype html>
-<html lang="nl">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bon <?= htmlspecialchars($ticketNumber) ?></title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; }
-    .message { border: 2px solid; padding: 20px; }
-    .success { border-color: #237a3b; }
-    .warning { border-color: #b36b00; }
-    .actions { margin-top: 24px; }
-    a { margin-right: 16px; }
-  </style>
-</head>
-<body>
-  <div class="message <?= $statusClass ?>">
-    <h1><?= htmlspecialchars($statusTitle) ?></h1>
-    <p>Bonnummer: <strong><?= htmlspecialchars($ticketNumber) ?></strong></p>
-    <p><?= htmlspecialchars($printResult['message']) ?></p>
-  </div>
-  <p class="actions">
-    <a href="/">Nieuwe bon</a>
-    <a href="/download.php?ticket=<?= rawurlencode($ticketNumber) ?>">PDF bekijken of downloaden</a>
-  </p>
-</body>
-</html>
+$status = 'saved';
+if ($action === 'print') {
+    $status = queuePdf($pdfFile)['success'] ? 'queued' : 'queue-failed';
+}
+
+header('Location: /ticket.php?ticket=' . rawurlencode($ticketNumber) . '&status=' . rawurlencode($status), true, 303);
+exit;
