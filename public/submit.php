@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 const DATA_DIR = '/data';
 const TICKET_DIR = DATA_DIR . '/tickets';
+const PRINT_QUEUE_DIR = DATA_DIR . '/print-queue';
 const COUNTER_FILE = DATA_DIR . '/counter.txt';
 
 function field(string $name): string
@@ -27,13 +28,51 @@ function choice(string $name): string
     return in_array($value, ['Ja', 'Nee'], true) ? $value : '';
 }
 
-function money(string $value): string
+function amount(string $value): float
 {
     $normalized = str_replace(',', '.', $value);
     if ($normalized === '' || !is_numeric($normalized)) {
-        return '';
+        return 0.0;
     }
-    return number_format((float) $normalized, 2, ',', '.');
+    return max(0.0, (float) $normalized);
+}
+
+function money(float $value): string
+{
+    return number_format($value, 2, ',', '.');
+}
+
+/** @return list<array{omschrijving: string, aantal: int, prijs: string, subtotaal: string, subtotaal_waarde: float}> */
+function extraItems(): array
+{
+    $descriptions = $_POST['extra_omschrijving'] ?? [];
+    $quantities = $_POST['extra_aantal'] ?? [];
+    $prices = $_POST['extra_prijs'] ?? [];
+
+    if (!is_array($descriptions) || !is_array($quantities) || !is_array($prices)) {
+        return [];
+    }
+
+    $items = [];
+    foreach (array_slice($descriptions, 0, 10) as $index => $descriptionRaw) {
+        $description = trim((string) $descriptionRaw);
+        if ($description === '') {
+            continue;
+        }
+
+        $quantity = max(1, min(999, (int) ($quantities[$index] ?? 1)));
+        $unitPrice = amount((string) ($prices[$index] ?? ''));
+
+        $items[] = [
+            'omschrijving' => $description,
+            'aantal' => $quantity,
+            'prijs' => money($unitPrice),
+            'subtotaal' => money($quantity * $unitPrice),
+            'subtotaal_waarde' => $quantity * $unitPrice,
+        ];
+    }
+
+    return $items;
 }
 
 function nextTicketNumber(): string
@@ -59,41 +98,23 @@ function nextTicketNumber(): string
 }
 
 /** @return array{success: bool, message: string} */
-function printPdf(string $pdfFile): array
+function queuePdf(string $pdfFile): array
 {
-    $server = getenv('CUPS_SERVER') ?: 'cups:631';
-    $printer = getenv('PRINTER_NAME') ?: 'PCRepairShop';
-    $copies = max(1, min(5, (int) (getenv('PRINT_COPIES') ?: 1)));
-
-    if (!preg_match('/^[a-zA-Z0-9._-]+(?::[0-9]{1,5})?$/', $server)
-        || !preg_match('/^[a-zA-Z0-9._-]+$/', $printer)) {
-        return ['success' => false, 'message' => 'De CUPS-configuratie is ongeldig.'];
+    if (!is_dir(PRINT_QUEUE_DIR)
+        && !mkdir(PRINT_QUEUE_DIR, 0775, true)
+        && !is_dir(PRINT_QUEUE_DIR)) {
+        return ['success' => false, 'message' => 'De printwachtrij kon niet worden aangemaakt.'];
     }
 
-    $process = proc_open([
-        '/usr/bin/lp', '-h', $server, '-d', $printer,
-        '-n', (string) $copies, $pdfFile,
-    ], [
-        1 => ['pipe', 'w'],
-        2 => ['pipe', 'w'],
-    ], $pipes);
+    $queueFile = PRINT_QUEUE_DIR . '/' . basename($pdfFile);
+    $temporaryFile = $queueFile . '.tmp-' . getmypid();
 
-    if (!is_resource($process)) {
-        return ['success' => false, 'message' => 'Het printproces kon niet worden gestart.'];
+    if (!copy($pdfFile, $temporaryFile) || !rename($temporaryFile, $queueFile)) {
+        @unlink($temporaryFile);
+        return ['success' => false, 'message' => 'De PDF is opgeslagen, maar kon niet in de printwachtrij worden geplaatst.'];
     }
 
-    $stdout = trim((string) stream_get_contents($pipes[1]));
-    $stderr = trim((string) stream_get_contents($pipes[2]));
-    fclose($pipes[1]);
-    fclose($pipes[2]);
-    $exitCode = proc_close($process);
-
-    if ($exitCode !== 0) {
-        error_log('CUPS printfout: ' . $stderr);
-        return ['success' => false, 'message' => 'De PDF is opgeslagen, maar printen is mislukt.'];
-    }
-
-    return ['success' => true, 'message' => $stdout !== '' ? $stdout : 'Printopdracht geaccepteerd.'];
+    return ['success' => true, 'message' => 'De bon staat klaar in de printwachtrij.'];
 }
 
 if (!is_dir(TICKET_DIR) && !mkdir(TICKET_DIR, 0775, true) && !is_dir(TICKET_DIR)) {
@@ -109,6 +130,14 @@ if ($date === false || $date->format('Y-m-d') !== $datumRaw || field('naam') ===
 }
 
 $ticketNumber = nextTicketNumber();
+$mainPriceRaw = field('prijs');
+$mainPrice = amount($mainPriceRaw);
+$extraItems = extraItems();
+$total = $mainPrice;
+foreach ($extraItems as $item) {
+    $total += $item['subtotaal_waarde'];
+}
+
 $values = [
     'datum' => $date->format('d-m-Y'),
     'nummer' => $ticketNumber,
@@ -121,11 +150,12 @@ $values = [
     'model' => field('model'),
     'serienummer' => field('serienummer'),
     'zegel' => field('zegel'),
-    'prijs' => money(field('prijs')),
-    'totaal' => money(field('totaal')),
+    'prijs' => $mainPriceRaw !== '' ? money($mainPrice) : '',
+    'totaal' => money($total),
+    'extra_artikelen' => $extraItems,
+    'omschrijving' => field('omschrijving'),
     'meedoenregeling' => choice('meedoenregeling'),
     'reparatie' => choice('reparatie'),
-    'medewerker' => field('medewerker'),
 ];
 
 $logo = base64_encode((string) file_get_contents(__DIR__ . '/assets/pcrepairshop-logo.jpg'));
@@ -145,9 +175,9 @@ if (file_put_contents($pdfFile, $dompdf->output(), LOCK_EX) === false) {
     exit('De PDF kon niet worden opgeslagen.');
 }
 
-$printResult = printPdf($pdfFile);
+$printResult = queuePdf($pdfFile);
 $statusClass = $printResult['success'] ? 'success' : 'warning';
-$statusTitle = $printResult['success'] ? 'Bon opgeslagen en verzonden naar de printer' : 'Bon opgeslagen, printen niet gelukt';
+$statusTitle = $printResult['success'] ? 'Bon opgeslagen en naar de printer gestuurd' : 'Bon opgeslagen, printopdracht niet aangemaakt';
 ?>
 <!doctype html>
 <html lang="nl">

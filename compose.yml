@@ -8,10 +8,6 @@ services:
     restart: unless-stopped
     ports:
       - "8080:80"
-    environment:
-      CUPS_SERVER: "cups:631"
-      PRINTER_NAME: "PCRepairShop"
-      PRINT_COPIES: "1"
     volumes:
       - ./data:/data
     depends_on:
@@ -32,6 +28,7 @@ services:
       PRINTER_URI: "ipp://192.168.1.189:631/ipp/print"
     volumes:
       - cups-spool:/var/spool/cups
+      - ./data:/data
     healthcheck:
       test: ["CMD-SHELL", "lpstat -r >/dev/null 2>&1 && lpstat -p PCRepairShop >/dev/null 2>&1"]
       interval: 10s

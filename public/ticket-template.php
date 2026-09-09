@@ -13,37 +13,42 @@ function renderTicketHtml(array $v, string $logoBase64): string
 <head>
   <meta charset="utf-8">
   <style>
-    @page { size: A4 portrait; margin: 13mm 16mm 14mm; }
+    @page { size: A4 portrait; margin: 9mm 12mm 10mm; }
     * { box-sizing: border-box; }
-    body { margin: 0; color: #000; font-family: "DejaVu Sans", sans-serif; font-size: 12pt; }
+    body { margin: 0; color: #000; font-family: "DejaVu Sans", sans-serif; font-size: 9.5pt; line-height: 1.25; }
     table { border-collapse: collapse; width: 100%; }
-    .header { margin-bottom: 8mm; }
+    .header { margin-bottom: 4mm; }
     .header td { vertical-align: top; }
-    .logo { width: 53mm; height: auto; }
-    .heading { text-align: center; padding-top: 2mm; }
-    .heading h1 { font-size: 22pt; font-weight: normal; margin: 0 0 3mm; }
-    .heading p { font-size: 10pt; line-height: 1.45; margin: 0; }
-    .top td { border: 1px solid #000; padding: 3mm; font-size: 14pt; }
-    .top .spacer { width: 4mm; border: 0; padding: 0; }
-    .details { margin-top: 5mm; }
-    .details th, .details td { border: 1px solid #000; padding: 2.7mm 3mm; height: 10mm; text-align: left; font-weight: normal; }
-    .details th { width: 31%; }
-    .computer { margin-top: 5mm; }
-    .computer th, .computer td { border: 1px solid #000; padding: 2.7mm 3mm; height: 10mm; text-align: left; font-size: 14pt; font-weight: normal; }
-    .computer th { width: 40%; }
-    .options-price { margin-top: 1mm; }
+    .logo { width: 43mm; height: auto; }
+    .heading { text-align: right; }
+    .heading h1 { font-size: 18pt; margin: 0 0 1.5mm; }
+    .heading p { font-size: 8.5pt; line-height: 1.3; margin: 0; }
+    .top { border-top: .5pt solid #777; border-bottom: .5pt solid #777; }
+    .top td { padding: 2mm 0; font-size: 10pt; }
+    .top .number { text-align: right; font-weight: bold; }
+    .section-title { margin: 4mm 0 1mm; font-size: 10pt; font-weight: bold; }
+    .details td { padding: 1.5mm 2mm 1.5mm 0; vertical-align: top; border-bottom: .35pt solid #bbb; }
+    .details .label { width: 19%; color: #333; }
+    .details .value { width: 31%; }
+    .computer td { padding: 1.5mm 2mm 1.5mm 0; vertical-align: top; border-bottom: .35pt solid #bbb; }
+    .computer .label { width: 14%; color: #333; }
+    .computer .value { width: 36%; }
+    .items th, .items td { padding: 1.4mm 1.5mm; text-align: left; border-bottom: .35pt solid #aaa; }
+    .items th { font-size: 8.5pt; color: #333; }
+    .items .number { text-align: right; white-space: nowrap; }
+    .items tr { page-break-inside: avoid; }
+    .description { margin-top: 1mm; min-height: 25mm; padding: 2.5mm; border: .5pt solid #777; white-space: pre-wrap; overflow-wrap: break-word; }
+    .options-price { margin-top: 4mm; page-break-inside: avoid; }
     .options-price td { vertical-align: top; }
-    .options { width: 48%; }
-    .option-title { margin: 0 0 2mm; font-size: 13pt; }
-    .option { margin: 0 0 2mm; }
-    .box { display: inline-block; width: 4.5mm; height: 4.5mm; border: 1px solid #000; text-align: center; line-height: 4mm; margin-right: 2mm; font-size: 11pt; }
-    .repair { margin-top: 5mm; }
-    .price-wrap { padding-top: 1mm; }
-    .price th, .price td { border: 1px solid #000; padding: 2.7mm 3mm; height: 10mm; text-align: left; font-size: 14pt; font-weight: normal; }
-    .price th { width: 47%; }
-    .signatures { margin-top: 16mm; }
-    .signatures td { width: 49%; border: 1px solid #000; height: 33mm; text-align: center; vertical-align: top; padding: 3mm 2mm; font-size: 11pt; }
-    .signatures .gap { width: 2%; border: 0; padding: 0; }
+    .options { width: 55%; }
+    .option-line { margin: 0 0 2mm; }
+    .option-title { display: inline-block; width: 34mm; font-weight: bold; }
+    .box { display: inline-block; width: 4mm; height: 4mm; border: .5pt solid #555; text-align: center; line-height: 3.5mm; margin: 0 1mm 0 2mm; font-size: 9pt; }
+    .price th, .price td { border-bottom: .35pt solid #999; padding: 1.5mm 0; text-align: left; font-weight: normal; }
+    .price th { width: 40%; }
+    .signatures { margin-top: 7mm; page-break-inside: avoid; }
+    .signatures td { width: 48%; height: 22mm; vertical-align: top; padding: 2mm 0; border-top: .5pt solid #777; font-size: 8.5pt; }
+    .signatures .gap { width: 4%; border: 0; }
   </style>
 </head>
 <body>
@@ -51,22 +56,44 @@ function renderTicketHtml(array $v, string $logoBase64): string
     <td style="width:42%"><img class="logo" src="data:image/jpeg;base64,<?= $logoBase64 ?>" alt="PC Repair Shop"></td>
     <td class="heading"><h1>Bon</h1><p>Le Bourgetstraat 27 5042 TG Tilburg<br>mail: pcrepairshop-west@beterprojecten-tilburg.nl<br>Tel: 06-28215217</p></td>
   </tr></table>
-  <table class="top"><tr><td style="width:67%">Datum: <?= $e($v['datum']) ?></td><td class="spacer"></td><td><?= $e($v['nummer']) ?></td></tr></table>
+  <table class="top"><tr><td>Datum: <?= $e($v['datum']) ?></td><td class="number">Bonnummer: <?= $e($v['nummer']) ?></td></tr></table>
+  <div class="section-title">Klantgegevens</div>
   <table class="details">
-    <tr><th>Naam Klant:</th><td><?= $e($v['naam']) ?></td></tr><tr><th>Adres:</th><td><?= $e($v['adres']) ?></td></tr>
-    <tr><th>PC-Woonplaats:</th><td><?= $e($v['postcode_woonplaats']) ?></td></tr><tr><th>Telefoon-GSM:</th><td><?= $e($v['telefoon']) ?></td></tr>
-    <tr><th>E-mailadres:</th><td><?= $e($v['email']) ?></td></tr>
+    <tr><td class="label">Naam:</td><td class="value"><?= $e($v['naam']) ?></td><td class="label">Telefoon:</td><td class="value"><?= $e($v['telefoon']) ?></td></tr>
+    <tr><td class="label">Adres:</td><td class="value"><?= $e($v['adres']) ?></td><td class="label">E-mail:</td><td class="value"><?= $e($v['email']) ?></td></tr>
+    <tr><td class="label">Postcode/plaats:</td><td colspan="3"><?= $e($v['postcode_woonplaats']) ?></td></tr>
   </table>
+  <div class="section-title">Product/apparaat</div>
   <table class="computer">
-    <tr><th>Beschrijving computer:</th><td></td></tr><tr><th>Merk:</th><td><?= $e($v['merk']) ?></td></tr>
-    <tr><th>Model:</th><td><?= $e($v['model']) ?></td></tr><tr><th>SN:</th><td><?= $e($v['serienummer']) ?></td></tr><tr><th>Zegel:</th><td><?= $e($v['zegel']) ?></td></tr>
+    <tr><td class="label">Merk:</td><td class="value"><?= $e($v['merk']) ?></td><td class="label">Model:</td><td class="value"><?= $e($v['model']) ?></td></tr>
+    <tr><td class="label">Serienummer:</td><td class="value"><?= $e($v['serienummer']) ?></td><td class="label">Zegel:</td><td class="value"><?= $e($v['zegel']) ?></td></tr>
   </table>
+  <?php if ($v['extra_artikelen'] !== []): ?>
+  <div class="section-title">Extra artikelen</div>
+  <table class="items">
+    <thead><tr><th>Omschrijving</th><th class="number">Aantal</th><th class="number">Per stuk</th><th class="number">Subtotaal</th></tr></thead>
+    <tbody>
+    <?php foreach ($v['extra_artikelen'] as $item): ?>
+      <tr>
+        <td><?= $e($item['omschrijving']) ?></td>
+        <td class="number"><?= $e((string) $item['aantal']) ?></td>
+        <td class="number">EUR <?= $e($item['prijs']) ?></td>
+        <td class="number">EUR <?= $e($item['subtotaal']) ?></td>
+      </tr>
+    <?php endforeach; ?>
+    </tbody>
+  </table>
+  <?php endif; ?>
+  <div class="section-title">Omschrijving</div>
+  <div class="description"><?= $e($v['omschrijving']) ?></div>
   <table class="options-price"><tr>
-    <td class="options"><p class="option-title">Meedoenregeling</p><p class="option"><span class="box"><?= $checked($v['meedoenregeling'], 'Ja') ?></span>Ja</p><p class="option"><span class="box"><?= $checked($v['meedoenregeling'], 'Nee') ?></span>Nee</p>
-      <div class="repair"><p class="option-title">Reparatie</p><p class="option"><span class="box"><?= $checked($v['reparatie'], 'Ja') ?></span>Ja</p><p class="option"><span class="box"><?= $checked($v['reparatie'], 'Nee') ?></span>Nee</p></div></td>
-    <td style="width:7%"></td><td class="price-wrap"><table class="price"><tr><th>Prijs:</th><td><?= $v['prijs'] !== '' ? 'EUR ' . $e($v['prijs']) : '' ?></td></tr><tr><th>Totaal:</th><td><?= $v['totaal'] !== '' ? 'EUR ' . $e($v['totaal']) : '' ?></td></tr></table></td>
+    <td class="options">
+      <p class="option-line"><span class="option-title">Meedoenregeling</span><span class="box"><?= $checked($v['meedoenregeling'], 'Ja') ?></span>Ja <span class="box"><?= $checked($v['meedoenregeling'], 'Nee') ?></span>Nee</p>
+      <p class="option-line"><span class="option-title">Reparatie</span><span class="box"><?= $checked($v['reparatie'], 'Ja') ?></span>Ja <span class="box"><?= $checked($v['reparatie'], 'Nee') ?></span>Nee</p>
+    </td>
+    <td style="width:5%"></td><td><table class="price"><tr><th>Prijs:</th><td><?= $v['prijs'] !== '' ? 'EUR ' . $e($v['prijs']) : '' ?></td></tr><tr><th>Totaal:</th><td><?= $v['totaal'] !== '' ? 'EUR ' . $e($v['totaal']) : '' ?></td></tr></table></td>
   </tr></table>
-  <table class="signatures"><tr><td>Paraaf Akkoord <?= $e($v['medewerker']) ?>:</td><td class="gap"></td><td>Handtekening klant voor akkoord:</td></tr></table>
+  <table class="signatures"><tr><td>Paraaf akkoord medewerker:</td><td class="gap"></td><td>Handtekening klant voor akkoord:</td></tr></table>
 </body></html>
     <?php
     return (string) ob_get_clean();
