@@ -64,10 +64,28 @@ function renderTicketHtml(array $v, string $logoBase64): string
     <tr><td class="label">Postcode/plaats:</td><td colspan="3"><?= $e($v['postcode_woonplaats']) ?></td></tr>
   </table>
   <div class="section-title">Product/apparaat</div>
-  <table class="computer">
-    <tr><td class="label">Merk:</td><td class="value"><?= $e($v['merk']) ?></td><td class="label">Model:</td><td class="value"><?= $e($v['model']) ?></td></tr>
-    <tr><td class="label">Serienummer:</td><td class="value"><?= $e($v['serienummer']) ?></td><td class="label">Zegel:</td><td class="value"><?= $e($v['zegel']) ?></td></tr>
-  </table>
+<table class="computer">
+  <tr>
+    <td class="label">Merk:</td>
+    <td class="value"><?= $e($v['merk']) ?></td>
+    <td class="label">Model:</td>
+    <td class="value"><?= $e($v['model']) ?></td>
+  </tr>
+  <tr>
+    <td class="label">Serienummer:</td>
+    <td class="value"><?= $e($v['serienummer']) ?></td>
+    <td class="label">Zegel:</td>
+    <td class="value"><?= $e($v['zegel']) ?></td>
+  </tr>
+  <tr>
+    <td class="label">Prijs:</td>
+    <td class="value">
+      <?= $v['prijs'] !== '' ? 'EUR ' . $e($v['prijs']) : '' ?>
+    </td>
+    <td class="label"></td>
+    <td class="value"></td>
+  </tr>
+</table>
   <?php if ($v['extra_artikelen'] !== []): ?>
   <div class="section-title">Extra artikelen</div>
   <table class="items">
@@ -85,14 +103,40 @@ function renderTicketHtml(array $v, string $logoBase64): string
   </table>
   <?php endif; ?>
 
-  <table class="options-price"><tr>
-    <td class="options">
-      <p class="option-line"><span class="option-title">Meedoenregeling</span><span class="box"><?= $checked($v['meedoenregeling'], 'Ja') ?></span>Ja <span class="box"><?= $checked($v['meedoenregeling'], 'Nee') ?></span>Nee</p>
-      <p class="option-line"><span class="option-title">Reparatie</span><span class="box"><?= $checked($v['reparatie'], 'Ja') ?></span>Ja <span class="box"><?= $checked($v['reparatie'], 'Nee') ?></span>Nee</p>
-    </td>
-    <td style="width:5%"></td><td><table class="price"><tr><th>Prijs:</th><td><?= $v['prijs'] !== '' ? 'EUR ' . $e($v['prijs']) : '' ?></td></tr>
-    <tr><th>Totaal:</th><td><?= $v['totaal'] !== '' ? 'EUR ' . $e($v['totaal']) : '' ?></td></tr></table></td>
-  </tr></table>
+  <table class="options-price">
+    <tr>
+      <td class="options">
+        <p class="option-line">
+          <span class="option-title">Meedoenregeling</span>
+          <span class="box"><?= $checked($v['meedoenregeling'], 'Ja') ?></span>Ja
+          <span class="box"><?= $checked($v['meedoenregeling'], 'Nee') ?></span>Nee
+        </p>
+
+        <p class="option-line">
+          <span class="option-title">Reparatie</span>
+          <span class="box"><?= $checked($v['reparatie'], 'Ja') ?></span>Ja
+          <span class="box"><?= $checked($v['reparatie'], 'Nee') ?></span>Nee
+        </p>
+      </td>
+
+      <td style="width:5%"></td>
+
+      <td>
+        <table class="price">
+          <tr class="price-spacer">
+            <th>&nbsp;</th>
+            <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <th>Totaal:</th>
+            <td>
+              <?= $v['totaal'] !== '' ? 'EUR ' . $e($v['totaal']) : '' ?>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
   <div class="section-title">Omschrijving</div>
   <div class="description"><?= $e($v['omschrijving']) ?></div>
   <table class="signatures"><tr><td>Paraaf akkoord medewerker:</td><td class="gap"></td><td>Handtekening klant voor akkoord:</td></tr></table>
