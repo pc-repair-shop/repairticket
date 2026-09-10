@@ -1,0 +1,82 @@
+name: Build and publish Docker images
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-push:
+    name: Build ${{ matrix.image }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: pcrepair-ticket-app
+            context: .
+            dockerfile: ./Dockerfile
+
+          - image: pcrepair-ticket-cups
+            context: ./cups
+            dockerfile: ./cups/Dockerfile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to Docker Hub
+        uses if: github.event_event.event_name != 'pull_request'
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Create image tags
+        id: tags
+        shell: bash
+        run: |
+          IMAGE="${{ vars.DOCKERHUB_USERNAME }}/${{ matrix.image }}"
+          SHORT_SHA="${GITHUB_SHA::7}"
+
+          {
+            echo "tags<<EOF"
+            echo "${IMAGE}:sha-${SHORT_SHA}"
+
+            if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+              echo "${IMAGE}:stable"
+            fi
+
+            if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+              VERSION="${GITHUB_REF_NAME#v}"
+              echo "${IMAGE}:${VERSION}"
+              echo "${IMAGE}:stable"
+            fi
+
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build and push image
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}

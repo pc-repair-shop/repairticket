@@ -1,0 +1,12 @@
+services:
+  repair-ticket:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: repair-ticket:dev
+
+  cups:
+    build:
+      context: ./cups
+      dockerfile: Dockerfile
+    image: repair-ticket-cups:dev
