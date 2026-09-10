@@ -49,7 +49,7 @@ jobs:
         id: tags
         shell: bash
         run: |
-          IMAGE="${{ vars.DOCKERHUB_USERNAME }}/${{ matrix.image }}"
+          IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}"
           SHORT_SHA="${GITHUB_SHA::7}"
 
           {
