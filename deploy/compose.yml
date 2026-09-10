@@ -1,0 +1,40 @@
+services:
+  repair-ticket:
+    image: pieterdoardo/pcrepair-ticket-app:${IMAGE_TAG:-stable}
+    container_name: repair-ticket
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:80"
+    volumes:
+      - ${DATA_PATH}:/data
+    depends_on:
+      cups:
+        condition: service_healthy
+    networks:
+      - repair-ticket-network
+
+  cups:
+    image: pieterdoardo/pcrepair-ticket-cups:${IMAGE_TAG:-stable}
+    container_name: repair-ticket-cups
+    restart: unless-stopped
+    environment:
+      PRINTER_NAME: "${PRINTER_NAME:-PCRepairShop}"
+      PRINTER_URI: "${PRINTER_URI}"
+    volumes:
+      - cups-spool:/var/spool/cups
+      - ${DATA_PATH}:/data
+    healthcheck:
+      test: ["CMD-SHELL", "lpstat -r >/dev/null 2>&1 && lpstat -p \"$${PRINTER_NAME}\" >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - repair-ticket-network
+
+networks:
+  repair-ticket-network:
+    driver: bridge
+
+volumes:
+  cups-spool:
