@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nieuwe bon</title>
+</head>
+<body>
+<h1>Nieuwe bon</h1>
+<form action="/reparatie/history.phpratie/history.php" method="get">
+  <button type="submit">Alle oude bonnen bekijken</button>
+</form>
+
+<form action="/submit.php" method="post">
+  <fieldset>
+    <legend>Bon</legend>
+    <p><label>Datum <input type="date" name="datum" value="" required></label></p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Klantgegevens</legend>
+    <p><label>Naam klant <input type="text" name="naam" required></label></p>
+    <p><label>Adres <input type="text" name="adres"></label></p>
+    <p><label>Postcode en woonplaats <input type="text" name="postcode_woonplaats"></label></p>
+    <p><label>Telefoon/GSM <input type="tel" name="telefoon"></label></p>
+    <p><label>E-mailadres <input type="email" name="email"></label></p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Product/apparaat</legend>
+    <p><label>Merk <input type="text" name="merk"></label></p>
+    <p><label>Model <input type="text" name="model"></label></p>
+    <p><label>Serienummer <input type="text" name="serienummer"></label></p>
+    <p><label>Zegel <input type="text" name="zegel"></label></p>
+    <p><label>Prijs hoofdproduct/reparatie (€) <input type="number" name="prijs" min="0" step="0.01"></label></p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Extra artikelen (optioneel)</legend>
+    <table>
+      <thead>
+      <tr><th>Omschrijving</th><th>Aantal</th><th>Prijs per stuk (€)</th><th></th></tr>
+      </thead>
+      <tbody id="extra-artikelen"></tbody>
+    </table>
+    <p><button type="button" id="artikel-toevoegen">Extra artikel toevoegen</button></p>
+    <p><strong>Totaal: € <output id="totaal">0,00</output></strong></p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Omschrijving</legend>
+    <p><label>Omschrijving verkoop, werkzaamheden of klacht<br>
+      <textarea name="omschrijving" rows="8" cols="70"></textarea>
+    </label></p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Meedoenregeling</legend>
+    <label><input type="radio" name="meedoenregeling" value="Ja" required> Ja</label>
+    <label><input type="radio" name="meedoenregeling" value="Nee" required> Nee</label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Reparatie</legend>
+    <label><input type="radio" name="reparatie" value="Ja" required> Ja</label>
+    <label><input type="radio" name="reparatie" value="Nee" required> Nee</label>
+  </fieldset>
+
+  <button type="submit" name="action" value="save">Bon opslaan en bekijken</button>
+  <button type="submit" name="action" value="print">Bon opslaan en printen</button>
+</form>
+
+<script>
+  document.querySelector('[name="datum"]').value = new Date().toISOString().slice(0, 10);
+
+  const artikelen = document.querySelector('#extra-artikelen');
+  const totaal = document.querySelector('#totaal');
+  const hoofdprijs = document.querySelector('[name="prijs"]');
+
+  function bedrag(value) {
+    const number = Number.parseFloat(value);
+    return Number.isFinite(number) && number >= 0 ? number : 0;
+  }
+
+  function berekenTotaal() {
+    let result = bedrag(hoofdprijs.value);
+
+    artikelen.querySelectorAll('tr').forEach((row) => {
+      const aantal = Math.max(1, Number.parseInt(row.querySelector('[name="extra_aantal[]"]').value, 10) || 1);
+      const prijs = bedrag(row.querySelector('[name="extra_prijs[]"]').value);
+      result += aantal * prijs;
+    });
+
+    totaal.value = result.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function voegArtikelToe() {
+    if (artikelen.children.length >= 10) return;
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><input type="text" name="extra_omschrijving[]" aria-label="Omschrijving extra artikel"></td>
+        <td><input type="number" name="extra_aantal[]" value="1" min="1" max="999" step="1" aria-label="Aantal"></td>
+        <td><input type="number" name="extra_prijs[]" min="0" step="0.01" aria-label="Prijs per stuk"></td>
+        <td><button type="button" class="artikel-verwijderen">Verwijderen</button></td>
+      `;
+    artikelen.appendChild(row);
+  }
+
+  document.querySelector('#artikel-toevoegen').addEventListener('click', voegArtikelToe);
+  hoofdprijs.addEventListener('input', berekenTotaal);
+  artikelen.addEventListener('input', berekenTotaal);
+  artikelen.addEventListener('click', (event) => {
+    if (event.target.classList.contains('artikel-verwijderen')) {
+      event.target.closest('tr').remove();
+      berekenTotaal();
+    }
+  });
+</script>
+</body>
+</html>
