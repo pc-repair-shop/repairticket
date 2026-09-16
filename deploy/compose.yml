@@ -1,6 +1,6 @@
 services:
   repair-ticket:
-    image: pieterdoardo/pcrepair-ticket-app:${IMAGE_TAG:-stable}
+    image: pieteredoardo/pcrepair-ticket-app:${IMAGE_TAG:-stable}
     container_name: repair-ticket
     restart: unless-stopped
     ports:
@@ -14,7 +14,7 @@ services:
       - repair-ticket-network
 
   cups:
-    image: pieterdoardo/pcrepair-ticket-cups:${IMAGE_TAG:-stable}
+    image: pieteredoardo/pcrepair-ticket-cups:${IMAGE_TAG:-stable}
     container_name: repair-ticket-cups
     restart: unless-stopped
     environment:
