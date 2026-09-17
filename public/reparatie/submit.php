@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 const DATA_DIR = '/data';
 const TICKET_DIR = DATA_DIR . '/tickets';
 const PRINT_QUEUE_DIR = DATA_DIR . '/print-queue';
-const COUNTER_FILE = DATA_DIR . '/counter.txt';
+const COUNTER_FILE = DATA_DIR . '/reparatie.txt';
 
 require __DIR__ . '/print-queue.php';
 

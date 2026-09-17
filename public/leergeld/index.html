@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Nieuwe Leergeld-bon</title>
+
+    <style>
+        body {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+            font-family: Arial, sans-serif;
+            color: #111;
+        }
+
+        .page-navigation {
+            margin-bottom: 24px;
+        }
+
+        fieldset {
+            margin: 0 0 18px;
+            padding: 18px;
+            border: 1px solid #999;
+        }
+
+        legend {
+            padding: 0 6px;
+            font-weight: bold;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin-bottom: 14px;
+        }
+
+        .form-field {
+            flex: 1 1 280px;
+        }
+
+        .form-field label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-field input {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 7px;
+            font: inherit;
+        }
+
+        .customer-computer {
+            position: relative;
+        }
+
+        .remove-button {
+            position: absolute;
+            top: 9px;
+            right: 12px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        button,
+        .button {
+            display: inline-block;
+            padding: 9px 14px;
+            border: 1px solid #333;
+            background: #f2f2f2;
+            color: #000;
+            font: inherit;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        button:hover,
+        .button:hover {
+            background: #ddd;
+        }
+
+        .primary-button {
+            background: #e5e5e5;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+<nav class="page-navigation">
+    <a href="../">Terug naar home</a>
+    &nbsp;|&nbsp;
+    <a href="history.php">Geschiedenis Leergeld</a>
+</nav>
+
+<h1>Nieuwe bon Stichting Leergeld</h1>
+
+<form action="submit.php" method="post">
+    <fieldset>
+        <legend>Bongegevens</legend>
+
+        <div class="form-row">
+            <div class="form-field">
+                <label for="datum">Datum</label>
+                <input
+                        type="date"
+                        id="datum"
+                        name="datum"
+                        required
+                >
+            </div>
+
+            <div class="form-field">
+                <label for="gezinsnummer">Gezinsnummer</label>
+                <input
+                        type="text"
+                        id="gezinsnummer"
+                        name="gezinsnummer"
+                        maxlength="50"
+                        required
+                >
+            </div>
+        </div>
+    </fieldset>
+
+    <div id="customer-computer-list"></div>
+
+    <button type="button" id="add-customer-computer">
+        Klant en computer toevoegen
+    </button>
+
+    <div class="actions">
+        <button
+                type="submit"
+                name="action"
+                value="save"
+        >
+            Opslaan en bekijken
+        </button>
+
+        <button
+                type="submit"
+                name="action"
+                value="print"
+                class="primary-button"
+        >
+            Opslaan en printen
+        </button>
+    </div>
+</form>
+
+<template id="customer-computer-template">
+    <fieldset class="customer-computer">
+        <legend>
+            Klant en computer <span class="entry-number"></span>
+        </legend>
+
+        <button
+                type="button"
+                class="remove-button"
+                aria-label="Deze klant en computer verwijderen"
+        >
+            Verwijderen
+        </button>
+
+        <h2>Klantgegevens</h2>
+
+        <div class="form-row">
+            <div class="form-field">
+                <label>Naam klant</label>
+                <input
+                        type="text"
+                        data-name="naam"
+                        maxlength="150"
+                        required
+                >
+            </div>
+
+            <div class="form-field">
+                <label>Telefoon/GSM</label>
+                <input
+                        type="tel"
+                        data-name="telefoon"
+                        maxlength="50"
+                >
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-field">
+                <label>Adres</label>
+                <input
+                        type="text"
+                        data-name="adres"
+                        maxlength="200"
+                >
+            </div>
+
+            <div class="form-field">
+                <label>Postcode en woonplaats</label>
+                <input
+                        type="text"
+                        data-name="postcode_woonplaats"
+                        maxlength="150"
+                >
+            </div>
+        </div>
+
+        <h2>Computer</h2>
+
+        <div class="form-row">
+            <div class="form-field">
+                <label>Merk</label>
+                <input
+                        type="text"
+                        data-name="merk"
+                        maxlength="100"
+                >
+            </div>
+
+            <div class="form-field">
+                <label>Model</label>
+                <input
+                        type="text"
+                        data-name="model"
+                        maxlength="100"
+                >
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-field">
+                <label>Serienummer</label>
+                <input
+                        type="text"
+                        data-name="serienummer"
+                        maxlength="150"
+                >
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script>
+    const list = document.getElementById('customer-computer-list');
+    const template = document.getElementById(
+        'customer-computer-template'
+    );
+    const addButton = document.getElementById(
+        'add-customer-computer'
+    );
+    const dateField = document.getElementById('datum');
+
+    let nextEntryId = 0;
+
+    function updateEntryNumbers() {
+        const entries = list.querySelectorAll('.customer-computer');
+
+        entries.forEach((entry, index) => {
+            entry.querySelector('.entry-number').textContent = index + 1;
+
+            entry.querySelector('.remove-button').hidden =
+                entries.length === 1;
+        });
+    }
+
+    function addCustomerComputer() {
+        const entryId = nextEntryId++;
+        const fragment = template.content.cloneNode(true);
+        const entry = fragment.querySelector('.customer-computer');
+
+        entry.querySelectorAll('[data-name]').forEach((field) => {
+            field.name =
+                `ontvangers[${entryId}][${field.dataset.name}]`;
+        });
+
+        entry.querySelector('.remove-button').addEventListener(
+            'click',
+            () => {
+                entry.remove();
+                updateEntryNumbers();
+            }
+        );
+
+        list.appendChild(fragment);
+        updateEntryNumbers();
+    }
+
+    addButton.addEventListener('click', addCustomerComputer);
+
+    if (!dateField.value) {
+        const today = new Date();
+        const offset = today.getTimezoneOffset() * 60000;
+
+        dateField.value = new Date(today.getTime() - offset)
+            .toISOString()
+            .slice(0, 10);
+    }
+
+    addCustomerComputer();
+</script>
+</body>
+</html>
