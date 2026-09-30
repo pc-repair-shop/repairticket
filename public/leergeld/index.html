@@ -3,7 +3,6 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title>Nieuwe Leergeld-bon</title>
 
     <style>
@@ -37,6 +36,10 @@
             margin-bottom: 14px;
         }
 
+        .form-row:last-child {
+            margin-bottom: 0;
+        }
+
         .form-field {
             flex: 1 1 280px;
         }
@@ -55,6 +58,11 @@
 
         .customer-computer {
             position: relative;
+        }
+
+        .customer-computer h2 {
+            margin: 8px 0 14px;
+            font-size: 1.1rem;
         }
 
         .remove-button {
@@ -131,10 +139,51 @@
         </div>
     </fieldset>
 
+    <fieldset>
+        <legend>Gezinsgegevens</legend>
+
+        <div class="form-row">
+            <div class="form-field">
+                <label for="adres">Adres</label>
+                <input
+                        type="text"
+                        id="adres"
+                        name="adres"
+                        maxlength="200"
+                >
+            </div>
+
+            <div class="form-field">
+                <label for="postcode_woonplaats">
+                    Postcode en woonplaats
+                </label>
+
+                <input
+                        type="text"
+                        id="postcode_woonplaats"
+                        name="postcode_woonplaats"
+                        maxlength="150"
+                >
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-field">
+                <label for="telefoon">Telefoon/GSM</label>
+                <input
+                        type="tel"
+                        id="telefoon"
+                        name="telefoon"
+                        maxlength="50"
+                >
+            </div>
+        </div>
+    </fieldset>
+
     <div id="customer-computer-list"></div>
 
     <button type="button" id="add-customer-computer">
-        Klant en computer toevoegen
+        Ontvanger en computer toevoegen
     </button>
 
     <div class="actions">
@@ -160,56 +209,27 @@
 <template id="customer-computer-template">
     <fieldset class="customer-computer">
         <legend>
-            Klant en computer <span class="entry-number"></span>
+            Ontvanger en computer
+            <span class="entry-number"></span>
         </legend>
 
         <button
                 type="button"
                 class="remove-button"
-                aria-label="Deze klant en computer verwijderen"
         >
             Verwijderen
         </button>
 
-        <h2>Klantgegevens</h2>
+        <h2>Ontvanger</h2>
 
         <div class="form-row">
             <div class="form-field">
-                <label>Naam klant</label>
+                <label>Naam ontvanger</label>
                 <input
                         type="text"
                         data-name="naam"
                         maxlength="150"
                         required
-                >
-            </div>
-
-            <div class="form-field">
-                <label>Telefoon/GSM</label>
-                <input
-                        type="tel"
-                        data-name="telefoon"
-                        maxlength="50"
-                >
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-field">
-                <label>Adres</label>
-                <input
-                        type="text"
-                        data-name="adres"
-                        maxlength="200"
-                >
-            </div>
-
-            <div class="form-field">
-                <label>Postcode en woonplaats</label>
-                <input
-                        type="text"
-                        data-name="postcode_woonplaats"
-                        maxlength="150"
                 >
             </div>
         </div>
@@ -265,7 +285,8 @@
         const entries = list.querySelectorAll('.customer-computer');
 
         entries.forEach((entry, index) => {
-            entry.querySelector('.entry-number').textContent = index + 1;
+            entry.querySelector('.entry-number').textContent =
+                String(index + 1);
 
             entry.querySelector('.remove-button').hidden =
                 entries.length === 1;

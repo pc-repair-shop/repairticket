@@ -79,9 +79,37 @@ function renderLeergeldTicketHtml(
             font-size: 10pt;
         }
 
+        .top .family {
+            text-align: center;
+        }
+
         .top .number {
             text-align: right;
             font-weight: bold;
+        }
+
+        .section-title {
+            margin: 4mm 0 1mm;
+            font-size: 10pt;
+            font-weight: bold;
+        }
+
+        .details td,
+        .computer td {
+            padding: 1.5mm 2mm 1.5mm 0;
+            vertical-align: top;
+            border-bottom: .35pt solid #bbb;
+        }
+
+        .details .label,
+        .computer .label {
+            width: 19%;
+            color: #333;
+        }
+
+        .details .value,
+        .computer .value {
+            width: 31%;
         }
 
         .recipient {
@@ -89,44 +117,12 @@ function renderLeergeldTicketHtml(
             page-break-inside: avoid;
         }
 
-        .section-title {
-            margin: 0 0 1mm;
-            font-size: 10pt;
-            font-weight: bold;
-        }
-
-        .details td {
-            padding: 1.5mm 2mm 1.5mm 0;
-            vertical-align: top;
-            border-bottom: .35pt solid #bbb;
-        }
-
-        .details .label {
-            width: 19%;
-            color: #333;
-        }
-
-        .details .value {
-            width: 31%;
+        .recipient .section-title {
+            margin-top: 0;
         }
 
         .computer {
             margin-top: 2mm;
-        }
-
-        .computer td {
-            padding: 1.5mm 2mm 1.5mm 0;
-            vertical-align: top;
-            border-bottom: .35pt solid #bbb;
-        }
-
-        .computer .label {
-            width: 19%;
-            color: #333;
-        }
-
-        .computer .value {
-            width: 31%;
         }
 
         .signatures {
@@ -151,107 +147,117 @@ function renderLeergeldTicketHtml(
 </head>
 
 <body>
-    <table class="header">
-        <tr>
-            <td style="width:42%">
-                <img
-                    class="logo"
-                    src="data:image/jpeg;base64,<?= $logoBase64 ?>"
-                    alt="PC Repair Shop"
-                >
-            </td>
+<table class="header">
+    <tr>
+        <td style="width:42%">
+            <img
+                class="logo"
+                src="data:image/jpeg;base64,<?= $logoBase64 ?>"
+                alt="PC Repair Shop"
+            >
+        </td>
 
-            <td class="heading">
-                <h1>Bon Stichting Leergeld</h1>
+        <td class="heading">
+            <h1>Bon Stichting Leergeld</h1>
 
-                <p>
-                    Le Bourgetstraat 27 5042 TG Tilburg<br>
-                    mail: pcrepairshop-west@beterprojecten-tilburg.nl<br>
-                    Tel: 06-28215217
-                </p>
-            </td>
-        </tr>
-    </table>
+            <p>
+                Le Bourgetstraat 27 5042 TG Tilburg<br>
+                mail: pcrepairshop-west@beterprojecten-tilburg.nl<br>
+                Tel: 06-28215217
+            </p>
+        </td>
+    </tr>
+</table>
 
-    <table class="top">
-        <tr>
-            <td>
-                Datum: <?= $escape($values['datum']) ?>
-            </td>
+<table class="top">
+    <tr>
+        <td>
+            Datum:
+            <?= $escape($values['datum'] ?? '') ?>
+        </td>
 
-            <td>
-                Gezinsnummer:
-                <strong><?= $escape($values['gezinsnummer']) ?></strong>
-            </td>
+        <td class="family">
+            Gezinsnummer:
+            <strong>
+                <?= $escape($values['gezinsnummer'] ?? '') ?>
+            </strong>
+        </td>
 
-            <td class="number">
-                Bonnummer: <?= $escape($values['nummer']) ?>
-            </td>
-        </tr>
-    </table>
+        <td class="number">
+            Bonnummer:
+            <?= $escape($values['nummer'] ?? '') ?>
+        </td>
+    </tr>
+</table>
 
-    <?php foreach ($values['ontvangers'] as $index => $recipient): ?>
-        <div class="recipient">
-            <div class="section-title">
-                Klant en computer <?= $index + 1 ?>
-            </div>
+<div class="section-title">Gezinsgegevens</div>
 
-            <table class="details">
-                <tr>
-                    <td class="label">Naam:</td>
-                    <td class="value">
-                        <?= $escape($recipient['naam']) ?>
-                    </td>
+<table class="details">
+    <tr>
+        <td class="label">Adres:</td>
+        <td class="value">
+            <?= $escape($values['adres'] ?? '') ?>
+        </td>
 
-                    <td class="label">Telefoon:</td>
-                    <td class="value">
-                        <?= $escape($recipient['telefoon']) ?>
-                    </td>
-                </tr>
+        <td class="label">Telefoon/GSM:</td>
+        <td class="value">
+            <?= $escape($values['telefoon'] ?? '') ?>
+        </td>
+    </tr>
 
-                <tr>
-                    <td class="label">Adres:</td>
-                    <td class="value">
-                        <?= $escape($recipient['adres']) ?>
-                    </td>
+    <tr>
+        <td class="label">Postcode/plaats:</td>
+        <td colspan="3">
+            <?= $escape($values['postcode_woonplaats'] ?? '') ?>
+        </td>
+    </tr>
+</table>
 
-                    <td class="label">Postcode/plaats:</td>
-                    <td class="value">
-                        <?= $escape($recipient['postcode_woonplaats']) ?>
-                    </td>
-                </tr>
-            </table>
-
-            <table class="computer">
-                <tr>
-                    <td class="label">Merk:</td>
-                    <td class="value">
-                        <?= $escape($recipient['merk']) ?>
-                    </td>
-
-                    <td class="label">Model:</td>
-                    <td class="value">
-                        <?= $escape($recipient['model']) ?>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td class="label">Serienummer:</td>
-                    <td colspan="3">
-                        <?= $escape($recipient['serienummer']) ?>
-                    </td>
-                </tr>
-            </table>
-
-            <table class="signatures">
-                <tr>
-                    <td>Paraaf akkoord medewerker:</td>
-                    <td class="gap"></td>
-                    <td>Paraaf ontvanger laptop:</td>
-                </tr>
-            </table>
+<?php foreach (($values['ontvangers'] ?? []) as $index => $recipient): ?>
+    <div class="recipient">
+        <div class="section-title">
+            Ontvanger en computer <?= $index + 1 ?>
         </div>
-    <?php endforeach; ?>
+
+        <table class="details">
+            <tr>
+                <td class="label">Naam ontvanger:</td>
+                <td colspan="3">
+                    <?= $escape($recipient['naam'] ?? '') ?>
+                </td>
+            </tr>
+        </table>
+
+        <table class="computer">
+            <tr>
+                <td class="label">Merk:</td>
+                <td class="value">
+                    <?= $escape($recipient['merk'] ?? '') ?>
+                </td>
+
+                <td class="label">Model:</td>
+                <td class="value">
+                    <?= $escape($recipient['model'] ?? '') ?>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="label">Serienummer:</td>
+                <td colspan="3">
+                    <?= $escape($recipient['serienummer'] ?? '') ?>
+                </td>
+            </tr>
+        </table>
+    </div>
+<?php endforeach; ?>
+
+<table class="signatures">
+    <tr>
+        <td>Paraaf akkoord medewerker:</td>
+        <td class="gap"></td>
+        <td>Paraaf ontvanger laptop:</td>
+    </tr>
+</table>
 </body>
 </html>
     <?php

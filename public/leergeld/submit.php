@@ -27,15 +27,16 @@ function field(string $name): string
 
 function cleanValue(mixed $value, int $maximumLength): string
 {
-    return mb_substr(trim((string) $value), 0, $maximumLength);
+    return mb_substr(
+        trim((string) $value),
+        0,
+        $maximumLength
+    );
 }
 
 /**
  * @return list<array{
  *     naam: string,
- *     telefoon: string,
- *     adres: string,
- *     postcode_woonplaats: string,
  *     merk: string,
  *     model: string,
  *     serienummer: string
@@ -57,29 +58,27 @@ function recipients(): array
         }
 
         $recipient = [
-            'naam' => cleanValue($submittedRecipient['naam'] ?? '', 150),
-            'telefoon' => cleanValue(
-                $submittedRecipient['telefoon'] ?? '',
-                50
-            ),
-            'adres' => cleanValue($submittedRecipient['adres'] ?? '', 200),
-            'postcode_woonplaats' => cleanValue(
-                $submittedRecipient['postcode_woonplaats'] ?? '',
+            'naam' => cleanValue(
+                $submittedRecipient['naam'] ?? '',
                 150
             ),
-            'merk' => cleanValue($submittedRecipient['merk'] ?? '', 100),
-            'model' => cleanValue($submittedRecipient['model'] ?? '', 100),
+            'merk' => cleanValue(
+                $submittedRecipient['merk'] ?? '',
+                100
+            ),
+            'model' => cleanValue(
+                $submittedRecipient['model'] ?? '',
+                100
+            ),
             'serienummer' => cleanValue(
                 $submittedRecipient['serienummer'] ?? '',
                 150
             ),
         ];
 
-        if ($recipient['naam'] === '') {
-            continue;
+        if ($recipient['naam'] !== '') {
+            $recipients[] = $recipient;
         }
-
-        $recipients[] = $recipient;
     }
 
     return $recipients;
@@ -129,7 +128,12 @@ function nextTicketNumber(): string
         fclose($handle);
     }
 
-    return str_pad((string) $next, 4, '0', STR_PAD_LEFT);
+    return str_pad(
+        (string) $next,
+        4,
+        '0',
+        STR_PAD_LEFT
+    );
 }
 
 function safeFamilyNumber(string $familyNumber): string
@@ -143,7 +147,9 @@ function safeFamilyNumber(string $familyNumber): string
     $safe = trim((string) $safe, '-_');
 
     if ($safe === '') {
-        throw new RuntimeException('Het gezinsnummer is ongeldig.');
+        throw new RuntimeException(
+            'Het gezinsnummer is ongeldig.'
+        );
     }
 
     return mb_substr($safe, 0, 80);
@@ -157,9 +163,16 @@ if (!in_array($action, ['save', 'print'], true)) {
 }
 
 $dateValue = field('datum');
-$date = DateTimeImmutable::createFromFormat('Y-m-d', $dateValue);
 
-if ($date === false || $date->format('Y-m-d') !== $dateValue) {
+$date = DateTimeImmutable::createFromFormat(
+    '!Y-m-d',
+    $dateValue
+);
+
+if (
+    $date === false
+    || $date->format('Y-m-d') !== $dateValue
+) {
     http_response_code(422);
     exit('Vul een geldige datum in.');
 }
@@ -175,7 +188,7 @@ $recipients = recipients();
 
 if ($recipients === []) {
     http_response_code(422);
-    exit('Voeg minimaal één klant en computer toe.');
+    exit('Voeg minimaal één ontvanger en computer toe.');
 }
 
 if (
@@ -184,7 +197,11 @@ if (
     && !is_dir(TICKET_DIR)
 ) {
     http_response_code(500);
-    exit('De opslagmap voor Leergeld-bonnen kon niet worden aangemaakt.');
+
+    exit(
+        'De opslagmap voor Leergeld-bonnen '
+        . 'kon niet worden aangemaakt.'
+    );
 }
 
 try {
@@ -201,18 +218,37 @@ $values = [
     'datum' => $date->format('d-m-Y'),
     'nummer' => $ticketNumber,
     'gezinsnummer' => $familyNumber,
+    'adres' => cleanValue(
+        $_POST['adres'] ?? '',
+        200
+    ),
+    'postcode_woonplaats' => cleanValue(
+        $_POST['postcode_woonplaats'] ?? '',
+        150
+    ),
+    'telefoon' => cleanValue(
+        $_POST['telefoon'] ?? '',
+        50
+    ),
     'ontvangers' => $recipients,
 ];
 
-$logoFile = dirname(__DIR__) . '/assets/pcrepairshop-logo.jpg';
+$logoFile = dirname(__DIR__)
+    . '/assets/pcrepairshop-logo.jpg';
 
 if (!is_file($logoFile)) {
     http_response_code(500);
     exit('Het logo kon niet worden gevonden.');
 }
 
-$logo = base64_encode((string) file_get_contents($logoFile));
-$ticketHtml = renderLeergeldTicketHtml($values, $logo);
+$logo = base64_encode(
+    (string) file_get_contents($logoFile)
+);
+
+$ticketHtml = renderLeergeldTicketHtml(
+    $values,
+    $logo
+);
 
 $options = new Options();
 $options->set('isRemoteEnabled', false);
@@ -226,7 +262,13 @@ $dompdf->render();
 $pdfFile = TICKET_DIR . '/' . $fileBase . '.pdf';
 $jsonFile = TICKET_DIR . '/' . $fileBase . '.json';
 
-if (file_put_contents($pdfFile, $dompdf->output(), LOCK_EX) === false) {
+if (
+    file_put_contents(
+        $pdfFile,
+        $dompdf->output(),
+        LOCK_EX
+    ) === false
+) {
     http_response_code(500);
     exit('De PDF kon niet worden opgeslagen.');
 }
@@ -238,11 +280,22 @@ $json = json_encode(
     | JSON_UNESCAPED_SLASHES
 );
 
-if ($json === false || file_put_contents($jsonFile, $json, LOCK_EX) === false) {
+if (
+    $json === false
+    || file_put_contents(
+        $jsonFile,
+        $json,
+        LOCK_EX
+    ) === false
+) {
     @unlink($pdfFile);
 
     http_response_code(500);
-    exit('De gegevens van de bon konden niet worden opgeslagen.');
+
+    exit(
+        'De gegevens van de bon konden niet '
+        . 'worden opgeslagen.'
+    );
 }
 
 $status = 'saved';
