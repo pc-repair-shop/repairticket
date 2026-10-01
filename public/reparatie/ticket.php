@@ -46,17 +46,46 @@ $message = $messages[$status] ?? null;
   <?php endif; ?>
 
   <div class="actions">
-    <a href="/">Nieuwe bon</a>
-    <form action="/history.php" method="get">
-      <button type="submit">Alle oude bonnen</button>
-    </form>
-    <a href="/download.php?ticket=<?= rawurlencode($ticket) ?>" target="_blank">PDF openen</a>
-    <form action="/reprint.php" method="post" onsubmit="return confirm('Weet je zeker dat je deze bon opnieuw wilt afdrukken?');">
-      <input type="hidden" name="ticket" value="<?= htmlspecialchars($ticket) ?>">
-      <button type="submit">Opnieuw afdrukken</button>
-    </form>
+      <a href="/reparatie/">Nieuwe bon</a>
+
+      <form action="/reparatie/history.php" method="get">
+          <button type="submit">Alle oude bonnen</button>
+      </form>
+
+      <a
+          href="/reparatie/download.php?ticket=<?= rawurlencode($ticket) ?>"
+          target="_blank"
+      >
+          PDF openen
+      </a>
+
+      <form
+          action="/reprint.php"
+          method="post"
+          onsubmit="return confirm(
+              'Weet je zeker dat je deze bon opnieuw wilt afdrukken?'
+          );"
+      >
+          <input
+              type="hidden"
+              name="type"
+              value="reparatie"
+          >
+
+          <input
+              type="hidden"
+              name="ticket"
+              value="<?= htmlspecialchars($ticket) ?>"
+          >
+
+          <button type="submit">
+              Opnieuw afdrukken
+          </button>
+      </form>
+
+      <a href="/">Naar home</a>
   </div>
 
-  <iframe src="/download.php?ticket=<?= rawurlencode($ticket) ?>" title="Voorbeeld van bon <?= htmlspecialchars($ticket) ?>"></iframe>
+  <iframe src="/reparatie/download.php?ticket=<?= rawurlencode($ticket) ?>" title="Voorbeeld van bon <?= htmlspecialchars($ticket) ?>"></iframe>
 </body>
 </html>
