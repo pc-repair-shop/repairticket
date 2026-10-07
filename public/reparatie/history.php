@@ -53,7 +53,7 @@ usort($tickets, static function (array $a, array $b): int {
           <td class="number"><?= htmlspecialchars($ticket['number']) ?></td>
           <td><?= date('d-m-Y H:i', $ticket['modified']) ?></td>
           <td><?= number_format(((int) $ticket['size']) / 1024, 1, ',', '.') ?> KB</td>
-          <td><a href="/ticket.php?ticket=<?= rawurlencode($ticket['number']) ?>">Bekijken of printen</a></td>
+          <td><a href="/reparatie/ticket.php?ticket=<?= rawurlencode($ticket['number']) ?>">Bekijken of printen</a></td>
         </tr>
       <?php endforeach; ?>
       </tbody>
