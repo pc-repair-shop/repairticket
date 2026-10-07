@@ -155,7 +155,7 @@ data/counter.txt    teller voor het volgende bonnummer
 
 Deze map is via een bind mount gekoppeld aan beide containers. De gegevens blijven bestaan wanneer containers of images worden vervangen.
 
-Neem de volledige map regelmatig mee in de normale Unraid-back-up. Verwijder of wijzig `counter.txt` niet handmatig zolang de applicatie draait.
+Neem de volledige map regelmatig mee in de normale Unraid-back-up. Verwijder of wijzig `reparatie.txt` niet handmatig zolang de applicatie draait.
 
 ## Stoppen en opnieuw starten
 

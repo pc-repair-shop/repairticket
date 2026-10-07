@@ -4,20 +4,20 @@ declare(strict_types=1);
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-require dirname(__DIR__) . '/vendor/autoload.php';
+require dirname(__DIR__, 2) . '/vendor/autoload.php';
 require __DIR__ . '/ticket-template.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: /', true, 303);
+    header('Location: /reparatie/', true, 303);
     exit;
 }
 
 const DATA_DIR = '/data';
 const TICKET_DIR = DATA_DIR . '/tickets';
 const PRINT_QUEUE_DIR = DATA_DIR . '/print-queue';
-const COUNTER_FILE = DATA_DIR . '/counter.txt';
+const COUNTER_FILE = DATA_DIR . '/reparatie.txt';
 
-require __DIR__ . '/print-queue.php';
+require dirname(__DIR__) . '/print-queue.php';
 
 function field(string $name): string
 {
@@ -146,7 +146,17 @@ $values = [
     'reparatie' => choice('reparatie'),
 ];
 
-$logo = base64_encode((string) file_get_contents(__DIR__ . '/assets/pcrepairshop-logo.jpg'));
+$logoFile = dirname(__DIR__)
+    . '/assets/pcrepairshop-logo.jpg';
+
+if (!is_file($logoFile)) {
+    http_response_code(500);
+    exit('Het logo kon niet worden gevonden.');
+}
+
+$logo = base64_encode(
+    (string) file_get_contents($logoFile)
+);
 $ticketHtml = renderTicketHtml($values, $logo);
 
 $options = new Options();
@@ -168,5 +178,12 @@ if ($action === 'print') {
     $status = queuePdf($pdfFile)['success'] ? 'queued' : 'queue-failed';
 }
 
-header('Location: /ticket.php?ticket=' . rawurlencode($ticketNumber) . '&status=' . rawurlencode($status), true, 303);
+header(
+    'Location: /reparatie/ticket.php?ticket='
+    . rawurlencode($ticketNumber)
+    . '&status='
+    . rawurlencode($status),
+    true,
+    303
+);
 exit;
